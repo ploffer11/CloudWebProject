@@ -1,43 +1,41 @@
 const express = require('express');
+const passport = require('passport');
 const router = express.Router();
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const config = require('../../config/key');
-const { User } = require('../../models/user');
-const { authMiddleware } = require('../../middleware/auth');
-const { autoHelper } = require('../../models/authHelper');
 
-// GET /drives/
-router.get('/', (req, res) => {
-  if (req.cookies.REFRESH_TOKEN_CACHE_KEY === undefined) {
-    console.log('token is undefined');
-  } else {
-    console.log('token is good');
-  }
+/* GET auth callback. */
+router.get('/signin', function(req, res, next) {
+  passport.authenticate('azuread-openidconnect', {
+    response: res,
+    prompt: 'login',
+    failureRedirect: '/',
+    failureFlash: true,
+    successRedirect: '/',
+  })(req, res, next);
 });
 
-// GET /drives/login
-router.get('/login', (req, res) => {
-  if (req.query.code !== undefined) {
-    authHelper.getTokenFromCode(req.query.code, function(
-      e,
-      access_token,
-      refresh_token,
-    ) {
-      if (e === null) {
-        res.cookie(authHelper.ACCESS_TOKEN_CACHE_KEY, access_token);
-        res.cookie(authHelper.REFRESH_TOKEN_CACHE_KEY, refresh_token);
-        res.redirect('/');
-      } else {
-        console.log(JSON.parse(e.data).error_description);
-        res.status(500);
-        res.send();
-      }
+router.post(
+  '/callback',
+  function(req, res, next) {
+    passport.authenticate('azuread-openidconnect', {
+      response: res,
+      failureRedirect: '/',
+      failureFlash: true,
+    })(req, res, next);
+  },
+  function(req, res) {
+    req.flash('error_msg', {
+      message: 'Access token',
+      debug: req.user.accessToken,
     });
-  } else {
-    res.render('login', { auth_url: authHelper.getAuthUrl() });
-  }
+    res.redirect('/');
+  },
+);
+
+router.get('/signout', function(req, res) {
+  req.session.destroy(function(err) {
+    req.logout();
+    res.redirect('/');
+  });
 });
 
 module.exports = router;

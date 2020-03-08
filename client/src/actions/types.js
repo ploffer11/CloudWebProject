@@ -1,2 +1,2 @@
-const USER_ACTION = 'user_action';
-const FOO_ACTION = 'foo_action';
+export const REGISTER_USER = 'register_user';
+export const LOGIN_USER = 'login_user';

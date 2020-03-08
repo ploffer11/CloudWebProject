@@ -1,6 +1,44 @@
 import React, { Component } from 'react';
+import { Link } from 'react-router-dom';
+import { loginUser } from '../../actions/user_actions';
+import { connect } from 'react-redux';
 
-export default class index extends Component {
+class index extends Component {
+  state = {
+    email: '',
+    password: '',
+    error_msg: '',
+  };
+
+  handleChange = event => {
+    this.setState({
+      [event.target.id]: event.target.value,
+    });
+  };
+
+  isFormEmpty = () => {
+    return this.state.email === '' || this.state.password === '';
+  };
+
+  submitForm = event => {
+    event.preventDefault();
+    console.log('?');
+    if (this.isFormEmpty()) return;
+    console.log('?');
+    let dataToSubmit = {
+      email: this.state.email,
+      password: this.state.password,
+    };
+
+    this.props.dispatch(loginUser(dataToSubmit)).then(res => {
+      console.log(res);
+      if (res.payload.loginSuccess) {
+        this.props.history.push('/user');
+      } else {
+      }
+    });
+  };
+
   render() {
     let buttonStyle = {
       width: '150px',
@@ -12,8 +50,9 @@ export default class index extends Component {
         <div class="container">
           <div class="row">
             <div class="col s12">
-              <h2 class="center-align">Login Page</h2>
-              {/* <div class="divider"></div> */}
+              <h2 class="center-align">병무청</h2>
+              <br />
+              <br />
             </div>
             <div class="col s12">
               <h6>
@@ -24,9 +63,14 @@ export default class index extends Component {
             <form class="col s12">
               <div class="row">
                 <div class="col s6 push-s2">
-                  <div>
+                  <div class="input-field">
                     <label for="email">Email</label>
-                    <input id="email" type="email" class="validate" />
+                    <input
+                      id="email"
+                      type="email"
+                      class="validate"
+                      onChange={this.handleChange}
+                    />
                     <span
                       class="helper-text"
                       // data-error="wrong"
@@ -34,9 +78,15 @@ export default class index extends Component {
                     ></span>
                   </div>
 
-                  <div>
+                  <div class="input-field">
                     <label for="password">Password</label>
-                    <input id="password" type="password" class="validate" />
+                    <input
+                      id="password"
+                      type="password"
+                      class="validate"
+                      onChange={this.handleChange}
+                      o
+                    />
                     <span
                       class="helper-text"
                       // data-error="wrong"
@@ -51,15 +101,24 @@ export default class index extends Component {
                     className="btn waves-effect waves-light red lighten-2"
                     type="submit"
                     name="action"
+                    onClick={this.submitForm}
                   >
                     Sign in
                   </button>
                 </div>
               </div>
             </form>
+
+            <div class="col s12 center-align">
+              Don't you have an account yet? &nbsp;&nbsp;
+              <Link class="waves-effect waves-light btn" to="/register">
+                Sign up<i class="material-icons right">create</i>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 }
+export default connect()(index);
